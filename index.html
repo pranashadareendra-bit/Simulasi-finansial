@@ -15,36 +15,92 @@
             color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            overflow-x: hidden;
         }
 
         /* Custom smooth scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #111827;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 9999px;
-        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 9999px; }
 
         .glass-panel {
             background: rgba(17, 24, 39, 0.75);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Animasi Tambahan */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-45px) scale(1.2); }
+        }
+        
+        @keyframes slideInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes warningShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-4px); }
+        }
+
+        @keyframes backgroundPan {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatingOrb {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+            100% { transform: translateY(0) rotate(360deg); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(99,102,241,0.3); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(99,102,241,0.6); transform: scale(1.02); }
+        }
+        
+        .animate-pulseGlow {
+            animation: pulseGlow 2s infinite;
+        }
+
+        .bg-animated {
+            background: linear-gradient(-45deg, #0b0f19, #111827, #1e1b4b, #0f172a);
+            background-size: 400% 400%;
+            animation: backgroundPan 15s ease infinite;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: floatingOrb 10s ease-in-out infinite;
         }
 
         .modal {
             display: none !important;
             opacity: 0;
-            transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .modal.active {
             display: flex !important;
             opacity: 1;
+        }
+        .modal.active .glass-panel {
+            animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         .bar-container {
@@ -59,14 +115,14 @@
         
         .bar-fill {
             height: 100%;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s;
             border-radius: 9999px;
         }
         
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-35px) scale(1.15); }
+        .status-danger {
+            animation: warningShake 0.4s ease-in-out;
         }
+
         .money-anim {
             position: absolute;
             font-weight: 800;
@@ -76,70 +132,62 @@
             text-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
 
-        .btn-active:active {
-            transform: scale(0.97);
-        }
+        .btn-active:active { transform: scale(0.95); }
+        .btn-hover:hover { transform: translateY(-3px); }
 
         .tab-btn-active {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: #ffffff !important;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
         }
 
-        .tab-content {
-            animation: fadeIn 0.2s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
+        .event-slide-in {
+            animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-[100dvh] flex flex-col relative pb-20 lg:pb-8">
+<body class="bg-animated text-slate-100 min-h-[100dvh] flex flex-col relative pb-20 lg:pb-8">
 
-    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40 px-3 py-2.5 md:px-6 md:py-3.5 shadow-2xl">
+    <!-- Floating Background Orbs Animasi -->
+    <div class="orb bg-indigo-600/30 w-64 h-64 top-10 left-10" style="animation-delay: 0s;"></div>
+    <div class="orb bg-rose-600/20 w-80 h-80 bottom-20 right-10" style="animation-delay: -3s;"></div>
+    <div class="orb bg-emerald-600/20 w-72 h-72 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style="animation-delay: -5s;"></div>
+
+    <header class="bg-slate-900/80 backdrop-blur-lg border-b border-slate-800/80 sticky top-0 z-40 px-3 py-2.5 md:px-6 md:py-3.5 shadow-2xl transition-all">
         <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
             
-            <!-- App Identity -->
             <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 md:w-11 md:h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-black text-base md:text-xl text-yellow-300 shadow-lg shadow-indigo-500/30 border border-indigo-400/30">
+                <div class="w-9 h-9 md:w-11 md:h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-black text-base md:text-xl text-yellow-300 shadow-lg shadow-indigo-500/40 border border-indigo-400/30 animate-pulse">
                     <i class="fas fa-wallet"></i>
                 </div>
                 <div>
-                    <h1 class="text-xs md:text-lg font-extrabold flex items-center gap-2 tracking-tight text-white">
+                    <h1 class="text-xs md:text-lg font-extrabold flex items-center gap-2 tracking-tight text-white drop-shadow-md">
                         FOMO vs Realita
-                        <span id="difficulty-badge" class="text-[9px] md:text-[11px] bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.5 rounded-full font-bold">Normal</span>
+                        <span id="difficulty-badge" class="text-[9px] md:text-[11px] bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.5 rounded-full font-bold shadow-sm">Normal</span>
                     </h1>
-                    <p class="text-[10px] md:text-xs text-slate-400 font-medium hidden sm:block">Kelola Uang & Jaga 3 Bar Kelangsungan Hidup</p>
+                    <p class="text-[10px] md:text-xs text-slate-400 font-medium hidden sm:block">Kelola Uang & Jaga Status Hidup</p>
                 </div>
             </div>
 
-            <!-- Top Actions & Stats -->
             <div class="flex items-center gap-1.5 md:gap-3">
-                
-                <!-- Pause Button (New) -->
-                <button onclick="openPauseModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600/50 px-2.5 py-1.5 md:px-3.5 md:py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition btn-active">
+                <button onclick="openPauseModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600/50 px-2.5 py-1.5 md:px-3.5 md:py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition btn-active btn-hover">
                     <i class="fas fa-pause text-slate-400"></i>
                     <span class="hidden xs:inline">Jeda</span>
                 </button>
-
-                <!-- Petunjuk Button -->
-                <button onclick="openGuideModal()" class="bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 px-2.5 py-1.5 md:px-3.5 md:py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition btn-active">
+                <button onclick="openGuideModal()" class="bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 px-2.5 py-1.5 md:px-3.5 md:py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition btn-active btn-hover">
                     <i class="fas fa-circle-question text-indigo-400"></i>
                     <span class="hidden md:inline">Petunjuk</span>
                 </button>
 
-                <!-- Day Counter -->
-                <div class="bg-slate-800/80 border border-slate-700/60 px-2.5 py-1 md:px-4 md:py-1.5 rounded-xl text-center">
+                <div class="bg-slate-800/80 border border-slate-700/60 px-2.5 py-1 md:px-4 md:py-1.5 rounded-xl text-center transform transition duration-300 hover:scale-105" id="day-container">
                     <p class="text-[8px] md:text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Hari</p>
                     <p class="text-xs md:text-xl font-black text-indigo-400 leading-none" id="day-display">1<span class="text-[10px] md:text-xs font-normal text-slate-400">/30</span></p>
                 </div>
 
-                <!-- Money Balance -->
-                <div class="bg-slate-800/80 border border-slate-700/60 px-3 py-1 md:px-5 md:py-1.5 rounded-xl text-right relative min-w-[100px] md:min-w-[150px]">
+                <div class="bg-slate-800/80 border border-slate-700/60 px-3 py-1 md:px-5 md:py-1.5 rounded-xl text-right relative min-w-[100px] md:min-w-[150px] transform transition duration-300 hover:scale-105" id="balance-container">
                     <p class="text-[8px] md:text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Saldo</p>
-                    <p class="text-xs md:text-xl font-black text-emerald-400 leading-none" id="balance-display">
+                    <p class="text-xs md:text-xl font-black text-emerald-400 leading-none drop-shadow-md" id="balance-display">
                         Rp 0
                     </p>
                     <div id="balance-anim-container" class="absolute right-2 top-0"></div>
@@ -148,177 +196,167 @@
 
         </div>
 
-        <!-- Quick Status Indicators (Always visible on mobile top header) -->
+        <!-- Quick Status (Mobile) -->
         <div class="flex lg:hidden justify-between items-center gap-2 mt-2 pt-2 border-t border-slate-800/80 text-[10px] font-bold px-1">
-            <div class="flex items-center gap-1.5 flex-1">
+            <div class="flex items-center gap-1.5 flex-1" id="mob-hunger-container">
                 <i class="fas fa-utensils text-amber-400 text-[10px]"></i>
                 <div class="bar-container flex-1 h-2">
                     <div id="mob-hunger-bar" class="bar-fill bg-amber-400" style="width: 100%"></div>
                 </div>
-                <span id="mob-hunger-val" class="w-7 text-right text-amber-300">100%</span>
             </div>
-            <div class="flex items-center gap-1.5 flex-1">
+            <div class="flex items-center gap-1.5 flex-1" id="mob-sanity-container">
                 <i class="fas fa-brain text-purple-400 text-[10px]"></i>
                 <div class="bar-container flex-1 h-2">
                     <div id="mob-sanity-bar" class="bar-fill bg-purple-400" style="width: 100%"></div>
                 </div>
-                <span id="mob-sanity-val" class="w-7 text-right text-purple-300">100%</span>
             </div>
-            <div class="flex items-center gap-1.5 flex-1">
+            <div class="flex items-center gap-1.5 flex-1" id="mob-health-container">
                 <i class="fas fa-heart text-rose-400 text-[10px]"></i>
                 <div class="bar-container flex-1 h-2">
                     <div id="mob-health-bar" class="bar-fill bg-rose-400" style="width: 100%"></div>
                 </div>
-                <span id="mob-health-val" class="w-7 text-right text-rose-300">100%</span>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow p-3 md:p-6 w-full max-w-6xl mx-auto">
+    <main class="flex-grow p-3 md:p-6 w-full max-w-6xl mx-auto relative z-10">
 
         <!-- Mobile Navigation Tabs Switcher -->
         <div class="lg:hidden flex bg-slate-900 border border-slate-800 p-1 rounded-2xl mb-4 text-xs font-bold gap-1 shadow-lg">
-            <button onclick="switchMobileTab('event')" id="mob-tab-event" class="flex-1 py-2.5 rounded-xl text-slate-400 transition flex items-center justify-center gap-1.5 btn-active tab-btn-active">
+            <button onclick="switchMobileTab('event')" id="mob-tab-event" class="flex-1 py-2.5 rounded-xl text-slate-400 transition-all flex items-center justify-center gap-1.5 btn-active tab-btn-active">
                 <i class="fas fa-bolt text-xs"></i> Event
             </button>
-            <button onclick="switchMobileTab('store')" id="mob-tab-store" class="flex-1 py-2.5 rounded-xl text-slate-400 transition flex items-center justify-center gap-1.5 btn-active">
+            <button onclick="switchMobileTab('store')" id="mob-tab-store" class="flex-1 py-2.5 rounded-xl text-slate-400 transition-all flex items-center justify-center gap-1.5 btn-active">
                 <i class="fas fa-store text-xs"></i> Toko Belanja
             </button>
-            <button onclick="switchMobileTab('status')" id="mob-tab-status" class="flex-1 py-2.5 rounded-xl text-slate-400 transition flex items-center justify-center gap-1.5 btn-active">
+            <button onclick="switchMobileTab('status')" id="mob-tab-status" class="flex-1 py-2.5 rounded-xl text-slate-400 transition-all flex items-center justify-center gap-1.5 btn-active">
                 <i class="fas fa-heartbeat text-xs"></i> Status Diri
             </button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
             
-            <!-- Left Panel: Status Bars & Guide Shortcut -->
-            <div class="col-span-1 lg:col-span-4 space-y-5 hidden lg:block tab-content" id="panel-status">
-                <div class="glass-panel p-5 rounded-3xl border border-slate-800 shadow-xl relative overflow-hidden">
-                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-600/10 rounded-full blur-2xl pointer-events-none"></div>
+            <!-- Left Panel: Status Bars -->
+            <div class="col-span-1 lg:col-span-4 space-y-5 hidden lg:block" id="panel-status">
+                <div class="glass-panel p-5 rounded-3xl shadow-xl relative overflow-hidden hover:shadow-indigo-500/20">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
                     <h2 class="text-xs md:text-sm font-black uppercase tracking-wider text-slate-400 mb-4 flex items-center justify-between">
-                        <span class="flex items-center gap-2"><i class="fas fa-user-shield text-indigo-400"></i> Indikator Kelangsungan</span>
-                        <span class="text-[10px] text-slate-500 font-medium">Reset 30 Hari</span>
+                        <span class="flex items-center gap-2"><i class="fas fa-user-shield text-indigo-400"></i> Indikator Vital</span>
                     </h2>
 
                     <!-- 3 Status Bars -->
                     <div class="space-y-4">
                         <!-- Kenyang -->
-                        <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800">
+                        <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800 transition-all duration-300" id="stat-card-hunger">
                             <div class="flex justify-between items-center text-xs font-bold mb-2">
                                 <span class="flex items-center gap-2 text-amber-300">
-                                    <div class="w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs">
+                                    <div class="w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs shadow-inner">
                                         <i class="fas fa-utensils"></i>
                                     </div>
-                                    Kenyang (Kelaparan)
+                                    Kenyang
                                 </span>
-                                <span id="hunger-text" class="text-amber-400 font-extrabold">100%</span>
+                                <span id="hunger-text" class="text-amber-400 font-extrabold text-sm">100%</span>
                             </div>
                             <div class="bar-container">
                                 <div id="hunger-bar" class="bar-fill bg-amber-400" style="width: 100%"></div>
                             </div>
                             <div class="flex justify-between items-center mt-2 text-[10px] text-slate-400 font-semibold">
-                                <span><i class="fas fa-angle-double-down text-rose-400"></i> Pengurasan Harian:</span>
+                                <span><i class="fas fa-angle-double-down text-rose-400 animate-bounce"></i> Pengurasan:</span>
                                 <span id="hunger-decay-text" class="text-rose-400 font-bold">-15% / hari</span>
                             </div>
                         </div>
 
                         <!-- Kewarasan -->
-                        <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800">
+                        <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800 transition-all duration-300" id="stat-card-sanity">
                             <div class="flex justify-between items-center text-xs font-bold mb-2">
                                 <span class="flex items-center gap-2 text-purple-300">
-                                    <div class="w-6 h-6 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-xs">
+                                    <div class="w-6 h-6 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-xs shadow-inner">
                                         <i class="fas fa-brain"></i>
                                     </div>
-                                    Kewarasan (Mental)
+                                    Kewarasan
                                 </span>
-                                <span id="sanity-text" class="text-purple-400 font-extrabold">100%</span>
+                                <span id="sanity-text" class="text-purple-400 font-extrabold text-sm">100%</span>
                             </div>
                             <div class="bar-container">
                                 <div id="sanity-bar" class="bar-fill bg-purple-400" style="width: 100%"></div>
                             </div>
                             <div class="flex justify-between items-center mt-2 text-[10px] text-slate-400 font-semibold">
-                                <span><i class="fas fa-angle-double-down text-rose-400"></i> Pengurasan Harian:</span>
+                                <span><i class="fas fa-angle-double-down text-rose-400 animate-bounce"></i> Pengurasan:</span>
                                 <span id="sanity-decay-text" class="text-rose-400 font-bold">-5% / hari</span>
                             </div>
                         </div>
 
                         <!-- Kesehatan -->
-                        <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800">
+                        <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800 transition-all duration-300" id="stat-card-health">
                             <div class="flex justify-between items-center text-xs font-bold mb-2">
                                 <span class="flex items-center gap-2 text-rose-300">
-                                    <div class="w-6 h-6 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 text-xs">
+                                    <div class="w-6 h-6 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 text-xs shadow-inner">
                                         <i class="fas fa-heartbeat"></i>
                                     </div>
-                                    Kesehatan Fisik
+                                    Kesehatan
                                 </span>
-                                <span id="health-text" class="text-rose-400 font-extrabold">100%</span>
+                                <span id="health-text" class="text-rose-400 font-extrabold text-sm">100%</span>
                             </div>
                             <div class="bar-container">
                                 <div id="health-bar" class="bar-fill bg-rose-400" style="width: 100%"></div>
                             </div>
                             <div class="flex justify-between items-center mt-2 text-[10px] text-slate-400 font-semibold">
-                                <span><i class="fas fa-angle-double-down text-rose-400"></i> Pengurasan Harian:</span>
+                                <span><i class="fas fa-angle-double-down text-rose-400 animate-bounce"></i> Pengurasan:</span>
                                 <span id="health-decay-text" class="text-rose-400 font-bold">-5% / hari</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Quick Help Trigger -->
-                    <div class="mt-4 p-3 bg-indigo-950/50 border border-indigo-800/40 rounded-2xl text-[11px] text-indigo-200 flex items-center justify-between">
-                        <span class="flex items-center gap-2"><i class="fas fa-lightbulb text-yellow-400"></i> Bingung aturan main?</span>
-                        <button onclick="openGuideModal()" class="text-xs text-indigo-300 font-bold hover:underline">Lihat Petunjuk &rarr;</button>
                     </div>
                 </div>
             </div>
 
             <!-- Center Panel: Daily Event Card -->
-            <div class="col-span-1 lg:col-span-8 flex flex-col gap-4 tab-content" id="panel-event">
+            <div class="col-span-1 lg:col-span-8 flex flex-col gap-4" id="panel-event">
                 
-                <div class="glass-panel p-5 md:p-8 rounded-3xl border border-slate-800 shadow-2xl flex-grow flex flex-col justify-between relative overflow-hidden min-h-[380px] md:min-h-[420px]">
-                    <div class="flex items-center justify-between gap-2 mb-4">
+                <div class="glass-panel p-5 md:p-8 rounded-3xl shadow-2xl flex-grow flex flex-col justify-between relative overflow-hidden min-h-[420px] hover:shadow-indigo-500/20">
+                    <div class="flex items-center justify-between gap-2 mb-4 relative z-10">
                         <span class="text-[10px] font-extrabold tracking-widest text-slate-400 uppercase flex items-center gap-1.5">
                             <i class="fas fa-calendar-day text-indigo-400"></i> Event Hari Ke-<span id="event-day-num">1</span>
                         </span>
-                        <div id="event-tag" class="text-[10px] md:text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                        <div id="event-tag" class="text-[10px] md:text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]">
                             MEMUAT...
                         </div>
                     </div>
 
                     <!-- Dynamic Event Content -->
-                    <div id="event-content" class="my-auto flex flex-col justify-center items-center text-center py-4">
+                    <div id="event-content" class="my-auto flex flex-col justify-center items-center text-center py-4 relative z-10 w-full">
                     </div>
                 </div>
 
                 <!-- Next Day Button -->
                 <div class="w-full">
-                    <button onclick="nextDay()" id="next-day-btn" disabled class="w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 disabled:border-slate-700 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all duration-200 btn-active flex justify-center items-center gap-3 text-base md:text-lg opacity-50 cursor-not-allowed border border-indigo-400/30">
+                    <button onclick="nextDay()" id="next-day-btn" disabled class="w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 disabled:border-slate-700 disabled:shadow-none text-white font-black py-4 px-6 rounded-2xl shadow-[0_4px_20px_rgba(99,102,241,0.5)] transition-all duration-300 btn-active flex justify-center items-center gap-3 text-base md:text-lg opacity-50 cursor-not-allowed border border-indigo-400/30 group">
                         <span>Akhiri Hari Ini</span>
-                        <i class="fas fa-arrow-right text-yellow-300"></i>
+                        <i class="fas fa-arrow-right text-yellow-300 group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Right Panel: Store -->
-            <div class="col-span-1 lg:col-span-12 hidden lg:block tab-content" id="panel-store">
-                <div class="glass-panel p-5 md:p-6 rounded-3xl border border-slate-800 shadow-xl">
-                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
+            <div class="col-span-1 lg:col-span-12 hidden lg:block" id="panel-store">
+                <div class="glass-panel p-5 md:p-6 rounded-3xl shadow-xl hover:shadow-indigo-500/20">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-5">
                         <div>
-                            <h2 class="text-sm md:text-base font-black uppercase tracking-wider text-slate-200 flex items-center gap-2">
-                                <i class="fas fa-store text-emerald-400"></i> Toko Kebutuhan & Self-Care
+                            <h2 class="text-sm md:text-base font-black uppercase tracking-wider text-white flex items-center gap-2 drop-shadow-md">
+                                <i class="fas fa-store text-emerald-400"></i> Toko Kebutuhan
                             </h2>
-                            <p class="text-xs text-slate-400 font-medium">Beli kebutuhan harian untuk memulihkan status sebelum mengakhiri hari.</p>
+                            <p class="text-xs text-slate-400 font-medium mt-1">Gunakan uangmu dengan bijak untuk memulihkan status.</p>
                         </div>
 
                         <!-- Category Selector -->
-                        <div class="flex bg-slate-900 border border-slate-800 p-1 rounded-2xl text-xs font-bold gap-1 shrink-0">
-                            <button onclick="switchStoreTab('food')" id="store-tab-food" class="px-3.5 py-1.5 rounded-xl text-slate-400 transition btn-active tab-btn-active">
+                        <div class="flex bg-slate-900 border border-slate-800 p-1.5 rounded-2xl text-xs font-bold gap-1.5 shrink-0 shadow-inner">
+                            <button onclick="switchStoreTab('food')" id="store-tab-food" class="px-3.5 py-1.5 rounded-xl text-slate-400 transition-all btn-active tab-btn-active">
                                 🍕 Makanan
                             </button>
-                            <button onclick="switchStoreTab('health')" id="store-tab-health" class="px-3.5 py-1.5 rounded-xl text-slate-400 transition btn-active">
+                            <button onclick="switchStoreTab('health')" id="store-tab-health" class="px-3.5 py-1.5 rounded-xl text-slate-400 transition-all btn-active">
                                 💊 Kesehatan
                             </button>
-                            <button onclick="switchStoreTab('lifestyle')" id="store-tab-lifestyle" class="px-3.5 py-1.5 rounded-xl text-slate-400 transition btn-active">
+                            <button onclick="switchStoreTab('lifestyle')" id="store-tab-lifestyle" class="px-3.5 py-1.5 rounded-xl text-slate-400 transition-all btn-active">
                                 🎮 Lifestyle
                             </button>
                         </div>
@@ -331,75 +369,60 @@
             </div>
 
         </div>
-
     </main>
 
-    <!-- Modal 1: Difficulty Select Modal -->
+    <!-- Modal 1: Difficulty Select Modal (Profil Karakter) -->
     <div id="start-modal" class="modal active fixed inset-0 bg-slate-950/90 z-50 items-center justify-center p-4 backdrop-blur-md">
-        <div class="glass-panel bg-slate-900/95 rounded-3xl max-w-xl w-full p-6 md:p-8 border border-slate-700 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div class="glass-panel bg-slate-900/95 rounded-3xl max-w-xl w-full p-6 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div class="text-center mb-6">
-                <div class="inline-flex w-14 h-14 rounded-2xl bg-indigo-600/30 border border-indigo-400/40 text-yellow-300 text-2xl items-center justify-center mb-3 shadow-lg">
-                    <i class="fas fa-gamepad"></i>
+                <div class="inline-flex w-16 h-16 rounded-2xl bg-indigo-600/30 border border-indigo-400/40 text-yellow-300 text-3xl items-center justify-center mb-4 shadow-[0_0_20px_rgba(99,102,241,0.4)] animate-bounce">
+                    <i class="fas fa-user-astronaut"></i>
                 </div>
-                <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight">Pilih Realita Gaji</h2>
-                <p class="text-xs md:text-sm text-slate-400 mt-1">Pilih kondisi keuanganmu untuk tantangan 30 hari ke depan.</p>
+                <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight drop-shadow-md">Pilih Profil Realita</h2>
+                <p class="text-xs md:text-sm text-slate-400 mt-2 font-medium">Setiap profil memiliki gaji dan beban pengeluaran yang berbeda.</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                <!-- Easy -->
-                <div onclick="selectDifficulty('easy')" id="mode-card-easy" class="mode-card cursor-pointer p-4 rounded-2xl border-2 border-slate-700 bg-slate-900 hover:border-emerald-400 transition relative btn-active">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="font-extrabold text-white text-sm">🟢 Anak Kos / Magang</span>
-                        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full font-bold">Easy</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <!-- Easy -> Karyawan Senior (12jt) -->
+                <div onclick="selectDifficulty('easy')" id="mode-card-easy" class="mode-card cursor-pointer p-4 rounded-2xl border-2 border-slate-700 bg-slate-900 hover:border-emerald-400 transition-all btn-active hover:shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-extrabold text-white text-sm">🟢 Karyawan Senior</span>
                     </div>
-                    <p class="text-xs text-slate-300 font-semibold mb-2">Gaji: <strong class="text-emerald-400 text-sm">Rp 12.000.000</strong></p>
-                    <p class="text-[11px] text-slate-400 leading-tight">Pengurasan status lambat (-10% Kenyang). Harga barang & event murah (Diskon 20%).</p>
+                    <p class="text-xs text-slate-300 font-semibold mb-2">Gaji: <strong class="text-emerald-400 text-base drop-shadow-sm">Rp 12.000.000</strong></p>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Pengurasan status lambat. Uang sisa banyak, diskon barang 20%.</p>
                 </div>
 
-                <!-- Normal -->
-                <div onclick="selectDifficulty('normal')" id="mode-card-normal" class="mode-card cursor-pointer p-4 rounded-2xl border-2 border-indigo-500 bg-indigo-950/40 transition relative btn-active">
-                    <div class="flex justify-between items-center mb-1">
+                <!-- Normal -> Pekerja Muda (6.5jt) -->
+                <div onclick="selectDifficulty('normal')" id="mode-card-normal" class="mode-card cursor-pointer p-4 rounded-2xl border-2 border-indigo-500 bg-indigo-950/40 transition-all btn-active shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                    <div class="flex justify-between items-center mb-2">
                         <span class="font-extrabold text-white text-sm">🔵 Pekerja Muda</span>
-                        <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.5 rounded-full font-bold">Normal</span>
                     </div>
-                    <p class="text-xs text-slate-300 font-semibold mb-2">Gaji: <strong class="text-indigo-400 text-sm">Rp 8.500.000</strong></p>
-                    <p class="text-[11px] text-slate-400 leading-tight">Standar realistis pekerja kantoran. Pengurasan status seimbang & harga standar.</p>
+                    <p class="text-xs text-slate-300 font-semibold mb-2">Gaji: <strong class="text-indigo-400 text-base drop-shadow-sm">Rp 6.500.000</strong></p>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Gaji standar kantoran. Pengurasan status seimbang & harga standar.</p>
                 </div>
 
-                <!-- Hard -->
-                <div onclick="selectDifficulty('hard')" id="mode-card-hard" class="mode-card cursor-pointer p-4 rounded-2xl border-2 border-slate-700 bg-slate-900 hover:border-amber-400 transition relative btn-active">
-                    <div class="flex justify-between items-center mb-1">
+                <!-- Hard -> Generasi Sandwich (5jt) -->
+                <div onclick="selectDifficulty('hard')" id="mode-card-hard" class="mode-card cursor-pointer p-4 rounded-2xl border-2 border-slate-700 bg-slate-900 hover:border-amber-400 transition-all btn-active hover:shadow-[0_0_15px_rgba(251,191,36,0.3)]">
+                    <div class="flex justify-between items-center mb-2">
                         <span class="font-extrabold text-white text-sm">🟠 Generasi Sandwich</span>
-                        <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full font-bold">Hard</span>
                     </div>
-                    <p class="text-xs text-slate-300 font-semibold mb-2">Gaji: <strong class="text-amber-400 text-sm">Rp 6.000.000</strong></p>
-                    <p class="text-[11px] text-slate-400 leading-tight">Ada kewajiban kirim orang tua di hari ke-15. Pengurasan cepat, harga 1.25x lipat.</p>
+                    <p class="text-xs text-slate-300 font-semibold mb-2">Gaji: <strong class="text-amber-400 text-base drop-shadow-sm">Rp 5.000.000</strong></p>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Wajib kirim uang ke ortu di pertengahan bulan. Harga barang 1.25x lipat.</p>
                 </div>
 
-                <!-- Extreme -->
-                <div onclick="selectDifficulty('extreme')" id="mode-card-extreme" class="mode-card cursor-pointer p-4 rounded-2xl border-2 border-slate-700 bg-slate-900 hover:border-rose-400 transition relative btn-active">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="font-extrabold text-white text-sm">🔴 Perantau UMR</span>
-                        <span class="text-[9px] bg-rose-500/20 text-rose-300 border border-rose-400/30 px-2 py-0.5 rounded-full font-bold">Extreme</span>
+                <!-- Extreme -> Anak Kos Magang (3.5jt - Dibawah UMR) -->
+                <div onclick="selectDifficulty('extreme')" id="mode-card-extreme" class="mode-card cursor-pointer p-4 rounded-2xl border-2 border-slate-700 bg-slate-900 hover:border-rose-400 transition-all btn-active hover:shadow-[0_0_15px_rgba(244,63,94,0.3)]">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-extrabold text-white text-sm">🔴 Anak Kos Magang</span>
                     </div>
-                    <p class="text-xs text-slate-300 font-semibold mb-2">Gaji: <strong class="text-rose-400 text-sm">Rp 4.200.000</strong></p>
-                    <p class="text-[11px] text-slate-400 leading-tight">Survival ketat! Harga 1.5x lipat, pengurasan status ekstrem (-20% / hari).</p>
+                    <p class="text-xs text-slate-300 font-semibold mb-2">Gaji: <strong class="text-rose-400 text-base drop-shadow-sm">Rp 3.500.000</strong></p>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Gaji di bawah UMR! Survival ketat, harga barang 1.5x lipat.</p>
                 </div>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3">
-                <button onclick="openGuideModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 font-bold py-3.5 px-4 rounded-2xl transition text-sm flex justify-center items-center gap-2 btn-active">
-                    <i class="fas fa-book-open"></i> Baca Petunjuk
-                </button>
-                <button onclick="startGame()" class="flex-[2] bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black py-3.5 px-6 rounded-2xl shadow-xl transition text-base btn-active flex justify-center items-center gap-2">
-                    Mulai Bertahan Hidup <i class="fas fa-play text-xs"></i>
-                </button>
-            </div>
-
-            <!-- Credits Button -->
-            <div class="mt-5 text-center">
-                <button onclick="openCreditsModal()" class="text-xs text-slate-500 hover:text-indigo-400 font-semibold transition inline-flex items-center gap-1.5">
-                    <i class="fas fa-users"></i> Credits Tim Pengembang
+                <button onclick="startGame()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black py-4 px-6 rounded-2xl shadow-[0_4px_15px_rgba(99,102,241,0.5)] transition-all text-base md:text-lg btn-active flex justify-center items-center gap-2 btn-hover">
+                    Mulai Bertahan Hidup <i class="fas fa-play text-sm ml-1"></i>
                 </button>
             </div>
         </div>
@@ -407,68 +430,28 @@
 
     <!-- Modal 2: Petunjuk Bermain (Instructions Modal) -->
     <div id="guide-modal" class="modal fixed inset-0 bg-slate-950/90 z-50 items-center justify-center p-4 backdrop-blur-md">
-        <div class="glass-panel bg-slate-900/95 rounded-3xl max-w-lg w-full p-6 md:p-8 border border-slate-700 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div class="glass-panel bg-slate-900/95 rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl">
             <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-800">
                 <h2 class="text-lg md:text-xl font-black text-white flex items-center gap-2">
                     <i class="fas fa-compass text-indigo-400"></i> Petunjuk Bermain
                 </h2>
-                <button onclick="closeGuideModal()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition btn-active">
+                <button onclick="closeGuideModal()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 hover:text-rose-400 flex items-center justify-center transition-all btn-active">
                     <i class="fas fa-xmark"></i>
                 </button>
             </div>
-
             <div class="space-y-4 text-xs md:text-sm text-slate-300">
-                
-                <!-- Objective -->
-                <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
-                    <h3 class="font-extrabold text-indigo-400 text-sm mb-1 flex items-center gap-2">
-                        🎯 Misi Utama
-                    </h3>
-                    <p class="leading-relaxed text-slate-300">
-                        Bertahan hidup selama <strong class="text-white">30 hari</strong> dengan mengelola gaji bulananmu. Jangan sampai <strong class="text-rose-400">Saldo minus (Pinjol)</strong> atau salah satu indikator fisik & mentalmu menyentuh <strong class="text-rose-400">0%</strong>.
-                    </p>
+                <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 transition-all hover:border-indigo-500/50">
+                    <h3 class="font-extrabold text-indigo-400 text-sm mb-1">🎯 Misi Utama</h3>
+                    <p class="leading-relaxed">Bertahan hidup selama <strong class="text-white">30 hari</strong> tanpa membuat Saldo minus (Pinjol) dan jangan sampai satupun indikator vitalmu mencapai <strong class="text-rose-400">0%</strong>.</p>
                 </div>
-
-                <!-- Vital Bars Guide -->
-                <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-2">
-                    <h3 class="font-extrabold text-amber-400 text-sm mb-1 flex items-center gap-2">
-                        📊 3 Indikator Vital
-                    </h3>
-                    <div class="flex items-start gap-2.5">
-                        <i class="fas fa-utensils text-amber-400 mt-1 shrink-0"></i>
-                        <p><strong class="text-amber-300">Kenyang:</strong> Berkurang tiap hari. Jika mencapai 0%, kamu pingsan kelaparan.</p>
-                    </div>
-                    <div class="flex items-start gap-2.5">
-                        <i class="fas fa-brain text-purple-400 mt-1 shrink-0"></i>
-                        <p><strong class="text-purple-300">Kewarasan:</strong> Berkurang jika menahan godaan atau lelah. Jika 0%, kamu burnout & depresi.</p>
-                    </div>
-                    <div class="flex items-start gap-2.5">
-                        <i class="fas fa-heartbeat text-rose-400 mt-1 shrink-0"></i>
-                        <p><strong class="text-rose-300">Kesehatan:</strong> Drop jika sakit/abaikan gizi. Jika 0%, kamu harus dirawat di Rumah Sakit.</p>
-                    </div>
+                <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 transition-all hover:border-amber-500/50 space-y-2">
+                    <h3 class="font-extrabold text-amber-400 text-sm mb-1">📊 3 Indikator Vital</h3>
+                    <p><strong class="text-amber-300">Kenyang:</strong> 0% = Pingsan Kelaparan.</p>
+                    <p><strong class="text-purple-300">Kewarasan:</strong> 0% = Burnout & Depresi.</p>
+                    <p><strong class="text-rose-300">Kesehatan:</strong> 0% = Masuk Rumah Sakit.</p>
                 </div>
-
-                <!-- Daily Mechanics -->
-                <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-2">
-                    <h3 class="font-extrabold text-emerald-400 text-sm mb-1 flex items-center gap-2">
-                        ⚡ Cara Main Setiap Hari
-                    </h3>
-                    <ol class="list-decimal list-inside space-y-1.5 leading-relaxed text-slate-300">
-                        <li>Ambil keputusan pada <strong class="text-white">Event Hari Ini</strong> (FOMO vs Realita).</li>
-                        <li>Gunakan <strong class="text-emerald-400">Toko Belanja</strong> untuk membeli Makanan, Kesehatan, atau Hiburan jika indikator mulai menipis.</li>
-                        <li>Tekan <strong class="text-indigo-400">'Akhiri Hari Ini'</strong> untuk lanjut ke hari berikutnya.</li>
-                    </ol>
-                </div>
-
-                <!-- Tips -->
-                <div class="p-3 bg-amber-950/30 border border-amber-500/30 rounded-2xl text-[11px] text-amber-200 flex items-start gap-2">
-                    <i class="fas fa-lightbulb text-amber-400 text-sm mt-0.5 shrink-0"></i>
-                    <p class="leading-relaxed"><strong>Tips Hemat:</strong> Beli makanan secukupnya di Warteg. Menolak godaan FOMO akan menghemat uang banyak, tetapi sediakan sedikit budget self-care agar kewarasan tidak bocor!</p>
-                </div>
-
             </div>
-
-            <button onclick="closeGuideModal()" class="w-full mt-5 bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3.5 rounded-2xl transition btn-active">
+            <button onclick="closeGuideModal()" class="w-full mt-5 bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3.5 rounded-2xl transition-all shadow-[0_4px_15px_rgba(99,102,241,0.4)] btn-active btn-hover">
                 Paham, Siap Bermain!
             </button>
         </div>
@@ -476,13 +459,12 @@
 
     <!-- Modal 3: Game Over Modal -->
     <div id="game-over-modal" class="modal fixed inset-0 bg-slate-950/95 z-50 items-center justify-center p-4 backdrop-blur-md">
-        <div class="glass-panel bg-slate-900 rounded-3xl max-w-md w-full p-6 md:p-8 text-center shadow-2xl border-t-8 border-rose-500">
-            <div id="go-icon" class="text-6xl mb-4">💀</div>
-            <h2 id="go-title" class="text-2xl md:text-3xl font-black mb-2 text-white">GAME OVER</h2>
+        <div class="glass-panel bg-slate-900 rounded-3xl max-w-md w-full p-6 md:p-8 text-center shadow-[0_0_40px_rgba(244,63,94,0.3)] border-t-8 border-rose-500">
+            <div id="go-icon" class="text-7xl mb-4 drop-shadow-lg animate-bounce">💀</div>
+            <h2 id="go-title" class="text-2xl md:text-3xl font-black mb-2 text-white drop-shadow-md">GAME OVER</h2>
             <p id="go-message" class="text-slate-300 mb-6 text-sm font-medium leading-relaxed px-2">Kamu gagal bertahan hidup.</p>
             
-            <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 mb-6 text-left space-y-2.5">
-                <p class="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">Laporan Akhir:</p>
+            <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 mb-6 text-left space-y-2.5 shadow-inner">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span class="text-slate-400 text-xs font-semibold">Lama Bertahan</span>
                     <span id="go-day" class="font-black text-indigo-400 text-base">0 Hari</span>
@@ -492,109 +474,64 @@
                     <span id="go-balance" class="font-black text-rose-400 text-base">Rp 0</span>
                 </div>
             </div>
-
-            <button onclick="resetGame()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 px-4 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-base btn-active border border-slate-700">
-                <i class="fas fa-rotate-left"></i> Coba Lagi Dari Awal
+            <button onclick="resetGame()" class="w-full bg-slate-800 hover:bg-slate-700 hover:border-rose-500 text-white font-black py-4 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-base btn-active border border-slate-700 btn-hover">
+                <i class="fas fa-rotate-left text-rose-400"></i> Coba Lagi Dari Awal
             </button>
         </div>
     </div>
 
     <!-- Modal 4: Victory Modal -->
     <div id="victory-modal" class="modal fixed inset-0 bg-slate-950/95 z-50 items-center justify-center p-4 backdrop-blur-md">
-        <div class="glass-panel bg-slate-900 rounded-3xl max-w-md w-full p-6 md:p-8 text-center shadow-2xl border-t-8 border-amber-400">
-            <div class="text-amber-400 text-6xl mb-4 relative inline-block">
+        <div class="glass-panel bg-slate-900 rounded-3xl max-w-md w-full p-6 md:p-8 text-center shadow-[0_0_40px_rgba(251,191,36,0.2)] border-t-8 border-amber-400">
+            <div class="text-amber-400 text-7xl mb-4 relative inline-block drop-shadow-[0_0_15px_rgba(251,191,36,0.6)] animate-pulse">
                 <i class="fas fa-trophy"></i>
             </div>
             <h2 class="text-2xl md:text-3xl font-black mb-2 text-white">30 Hari Lolos!</h2>
-            <p class="text-slate-300 mb-6 text-sm font-medium leading-relaxed">Selamat! Kamu berhasil melewati 1 bulan tanpa bangkrut atau tumbang.</p>
+            <p class="text-slate-300 mb-6 text-sm font-medium leading-relaxed">Selamat! Kamu berhasil melewati bulan yang berat tanpa bangkrut atau tumbang.</p>
             
-            <div class="bg-slate-950/80 rounded-2xl p-4 mb-6 text-left border border-slate-800">
-                <p class="text-[10px] text-indigo-400 font-extrabold uppercase tracking-wider mb-2">Evaluasi Finansial Bulan Ini:</p>
+            <div class="bg-slate-950/80 rounded-2xl p-4 mb-6 text-left border border-slate-800 shadow-inner">
+                <p class="text-[10px] text-indigo-400 font-extrabold uppercase tracking-wider mb-2">Evaluasi Finansial:</p>
                 <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800 mb-3">
                     <span class="text-slate-400 text-xs font-semibold">Sisa Tabungan</span>
-                    <span id="vic-balance" class="font-black text-emerald-400 text-lg">Rp 0</span>
+                    <span id="vic-balance" class="font-black text-emerald-400 text-xl drop-shadow-sm">Rp 0</span>
                 </div>
                 <p id="vic-evaluation" class="text-xs text-slate-300 leading-relaxed font-medium bg-slate-900 p-3 rounded-xl border border-slate-800">...</p>
             </div>
-
-            <button onclick="resetGame()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-4 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-base btn-active">
-                <i class="fas fa-play"></i> Main Lagi / Ganti Mode
+            <button onclick="resetGame()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-4 px-4 rounded-2xl shadow-[0_4px_15px_rgba(16,185,129,0.4)] transition-all flex items-center justify-center gap-2 text-base btn-active btn-hover">
+                <i class="fas fa-play"></i> Main Profil Lainnya
             </button>
         </div>
     </div>
 
-    <!-- Modal 5: Pause / Menu Modal (NEW) -->
+    <!-- Modal 5: Pause / Menu Modal -->
     <div id="pause-modal" class="modal fixed inset-0 bg-slate-950/80 z-50 items-center justify-center p-4 backdrop-blur-md">
         <div class="glass-panel bg-slate-900/95 rounded-3xl max-w-sm w-full p-6 md:p-8 text-center shadow-2xl border border-slate-700">
             <div class="text-indigo-400 text-4xl mb-4 flex justify-center">
-                <div class="w-16 h-16 rounded-2xl bg-indigo-950/50 border border-indigo-500/30 flex items-center justify-center">
+                <div class="w-16 h-16 rounded-2xl bg-indigo-950/50 border border-indigo-500/30 flex items-center justify-center shadow-lg">
                     <i class="fas fa-pause"></i>
                 </div>
             </div>
-            <h2 class="text-2xl font-black mb-2 text-white">Game Dijeda</h2>
-            <p class="text-slate-400 mb-6 text-xs font-medium">Apa yang ingin kamu lakukan selanjutnya?</p>
+            <h2 class="text-2xl font-black mb-6 text-white">Game Dijeda</h2>
             
             <div class="space-y-3">
-                <button onclick="closePauseModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm btn-active">
+                <button onclick="closePauseModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-[0_4px_15px_rgba(99,102,241,0.4)] transition-all flex items-center justify-center gap-2 text-sm btn-active btn-hover">
                     <i class="fas fa-play"></i> Lanjutkan Permainan
                 </button>
-                
-                <button onclick="restartCurrentMode()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 text-sm btn-active border border-slate-700">
-                    <i class="fas fa-rotate-left text-slate-400"></i> Ulangi (Mode Saat Ini)
+                <button onclick="restartCurrentMode()" class="w-full bg-slate-800 hover:bg-slate-700 hover:border-slate-500 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm btn-active border border-slate-700 btn-hover">
+                    <i class="fas fa-rotate-left text-slate-400"></i> Ulangi Mode Ini
                 </button>
-                
-                <button onclick="resetGame()" class="w-full bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 text-sm btn-active border border-slate-700">
-                    <i class="fas fa-gamepad text-rose-400"></i> Ganti Mode / Menu Utama
+                <button onclick="resetGame()" class="w-full bg-slate-800 hover:bg-slate-700 hover:border-rose-500/50 text-rose-300 font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm btn-active border border-slate-700 btn-hover">
+                    <i class="fas fa-gamepad text-rose-400"></i> Ganti Profil Karakter
                 </button>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal 6: Credits Modal -->
-    <div id="credits-modal" class="modal fixed inset-0 bg-slate-950/90 z-50 items-center justify-center p-4 backdrop-blur-md">
-        <div class="glass-panel bg-slate-900/95 rounded-3xl max-w-sm w-full p-6 md:p-8 border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-800">
-                <h2 class="text-lg md:text-xl font-black text-white flex items-center gap-2">
-                    <i class="fas fa-users text-indigo-400"></i> Tim Pengembang
-                </h2>
-                <button onclick="closeCreditsModal()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition btn-active">
-                    <i class="fas fa-xmark"></i>
-                </button>
-            </div>
-            
-            <div class="space-y-3">
-                <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800">
-                    <p class="font-bold text-indigo-400 text-[10px] uppercase tracking-wider mb-1">Editor & Programmer</p>
-                    <p class="text-white font-semibold text-sm">Pranasha Aimaar Dareendra</p>
-                </div>
-                
-                <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800">
-                    <p class="font-bold text-emerald-400 text-[10px] uppercase tracking-wider mb-1">Perancang Konsep</p>
-                    <div class="space-y-1 text-white font-semibold text-sm">
-                        <p>Jasmine Alisya Putri</p>
-                        <p>Carrisa Danish Kusmana</p>
-                    </div>
-                </div>
-                
-                <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800">
-                    <p class="font-bold text-amber-400 text-[10px] uppercase tracking-wider mb-1">Tester</p>
-                    <div class="space-y-1 text-white font-semibold text-sm">
-                        <p>Rezky Kamali Diera</p>
-                        <p>Kyra Ghassani Rizal</p>
-                    </div>
-                </div>
-            </div>
-            
-            <button onclick="closeCreditsModal()" class="w-full mt-6 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl transition text-sm btn-active border border-slate-700">
-                Tutup
-            </button>
         </div>
     </div>
 
     <script>
+        // Database Profil Kesulitan Baru
         const DIFFICULTY_PRESETS = {
             easy: {
-                name: 'Anak Kos / Magang',
+                name: 'Karyawan Senior',
                 badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30',
                 initialBalance: 12000000,
                 priceMult: 0.8,
@@ -603,21 +540,21 @@
             normal: {
                 name: 'Pekerja Muda',
                 badgeClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30',
-                initialBalance: 8500000,
+                initialBalance: 6500000,
                 priceMult: 1.0,
                 decay: { hunger: 15, sanity: 5, health: 5 }
             },
             hard: {
                 name: 'Generasi Sandwich',
                 badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-400/30',
-                initialBalance: 6000000,
+                initialBalance: 5000000,
                 priceMult: 1.25,
                 decay: { hunger: 18, sanity: 8, health: 8 }
             },
             extreme: {
-                name: 'Perantau UMR',
+                name: 'Anak Kos Magang',
                 badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-400/30',
-                initialBalance: 4200000,
+                initialBalance: 3500000, // Dibawah UMR
                 priceMult: 1.5,
                 decay: { hunger: 20, sanity: 10, health: 10 }
             }
@@ -628,25 +565,17 @@
         let currentStoreTab = 'food';
         
         let state = {
-            day: 1,
-            maxDays: 30,
-            balance: 8500000,
-            hunger: 100,
-            sanity: 100,
-            health: 100,
-            hasPlayedEvent: false,
-            gameOverTriggered: false
+            day: 1, maxDays: 30, balance: 6500000,
+            hunger: 100, sanity: 100, health: 100,
+            hasPlayedEvent: false, gameOverTriggered: false
         };
 
-        // DOM elements
+        // DOM element cache
         const elDay = document.getElementById('day-display');
         const elBalance = document.getElementById('balance-display');
-        const elHungerBar = document.getElementById('hunger-bar');
-        const elHungerText = document.getElementById('hunger-text');
-        const elSanityBar = document.getElementById('sanity-bar');
-        const elSanityText = document.getElementById('sanity-text');
-        const elHealthBar = document.getElementById('health-bar');
-        const elHealthText = document.getElementById('health-text');
+        const elHungerBar = document.getElementById('hunger-bar'), elHungerText = document.getElementById('hunger-text');
+        const elSanityBar = document.getElementById('sanity-bar'), elSanityText = document.getElementById('sanity-text');
+        const elHealthBar = document.getElementById('health-bar'), elHealthText = document.getElementById('health-text');
         
         const elEventContent = document.getElementById('event-content');
         const elEventTag = document.getElementById('event-tag');
@@ -658,160 +587,90 @@
         const modalGameOver = document.getElementById('game-over-modal');
         const modalVictory = document.getElementById('victory-modal');
         const modalPause = document.getElementById('pause-modal');
-        const modalCredits = document.getElementById('credits-modal');
 
-        const formatMoney = (amount) => {
-            return new Intl.NumberFormat('id-ID').format(Math.round(amount));
-        };
+        const formatMoney = (amount) => new Intl.NumberFormat('id-ID').format(Math.round(amount));
 
+        // Event & Store Data
         const events = [
-            {
-                type: 'fomo',
-                title: 'Flash Sale Sepatu Impian!',
-                desc: 'Ada diskon 70% di online shop untuk sepatu incaranmu. Semua teman tongkrongan sudah pamer checkout.',
-                icon: 'fa-bag-shopping text-amber-400',
-                tag: 'GODAAN FOMO',
-                baseCost: 450000,
-                choices: [
-                    { text: 'Checkout Sekarang!', costMult: 1, sanity: 20, health: 0, hunger: 0, message: 'Sepatu baru mendarat! Kamu merasa gaul & hepi, dompet menangis.' },
-                    { text: 'Tutup Aplikasi & Tahan Diri', costMult: 0, sanity: -10, health: 0, hunger: 0, message: 'Kepikiran sepatu itu sampai malam, tapi saldo tetap aman.' }
-                ]
-            },
-            {
-                type: 'fomo',
-                title: 'War Tiket Konser Viral',
-                desc: 'Musisi favorit dunia bakal manggung di Jakarta! War tiket dibuka jam 12 siang ini.',
-                icon: 'fa-ticket-simple text-purple-400',
-                tag: 'GODAAN FOMO',
-                baseCost: 1200000,
-                choices: [
-                    { text: 'Gas War Tiket (CAT 3)', costMult: 1, sanity: 35, health: -5, hunger: 0, message: 'DAPAT TIKET! Pamer story langsung banjir likes. Mental puas, dompet jebol.' },
-                    { text: 'Nonton via Story Orang', costMult: 0, sanity: -15, health: 0, hunger: 0, message: 'Ngenes dikit liat keseruan orang lain, tapi tabungan utuh.' }
-                ]
-            },
-            {
-                type: 'fomo',
-                title: 'Nongkrong Cafe Aesthetic',
-                desc: 'Circle teman kantor ngajak meetup di cafe hitz yang harganya lumayan mahal.',
-                icon: 'fa-mug-hot text-amber-400',
-                tag: 'SOSIAL',
-                baseCost: 150000,
-                choices: [
-                    { text: 'Ikut Nongkrong', costMult: 1, sanity: 15, health: 0, hunger: 15, message: 'Kenyang makan pastry & dapat banyak foto estetik untuk feeds.' },
-                    { text: 'Alasan Lembur di Kosan', costMult: 0, sanity: -10, health: 0, hunger: 0, message: 'Sedikit FOMO melihat Snap Story teman-teman, tapi berhasil hemat.' }
-                ]
-            },
-            {
-                type: 'need',
-                title: 'Musibah: Ban Motor Bocor',
-                desc: 'Apes! Pulang kerja di malam hari ban motor kena paku. Jauh dari kosan.',
-                icon: 'fa-screwdriver-wrench text-slate-400',
-                tag: 'REALITA',
-                baseCost: 65000,
-                choices: [
-                    { text: 'Tambal & Servis di Bengkel', costMult: 1, sanity: 0, health: 0, hunger: 0, message: 'Masalah beres dengan cepat. Musibah memang tak terduga.' },
-                    { text: 'Tuntun Motor Jauh-Jauh', costMult: 0, sanity: -20, health: -20, hunger: -20, message: 'Keringatan, capek luar biasa, dan badan pegal linu. Berhasil irit!' }
-                ]
-            },
-            {
-                type: 'need',
-                title: 'Badan Tumbang & Demam',
-                desc: 'Efek begadang kerja dan kurang makan bergizi, hari ini badanmu menggigil demam.',
-                icon: 'fa-truck-medical text-rose-400',
-                tag: 'KESEHATAN',
-                baseCost: 180000,
-                choices: [
-                    { text: 'Berobat ke Dokter / Klinik', costMult: 1, sanity: 5, health: 40, hunger: 0, message: 'Dapat obat dan vitamin. Fisik kembali pulih dalam waktu cepat.' },
-                    { text: 'Tahan Sakit & Minum Air Putih', costMult: 0, sanity: -25, health: -15, hunger: -10, message: 'Menggigil seharian di kamar. Kesehatanmu makin drop parah.' }
-                ]
-            },
-            {
-                type: 'need',
-                title: 'Kondangan Teman Kantor',
-                desc: 'Teman seangkatan menikah akhir pekan ini. Perlu amplop kondangan dan baju rapi.',
-                icon: 'fa-envelope text-yellow-400',
-                tag: 'KEWAJIBAN',
-                baseCost: 250000,
-                choices: [
-                    { text: 'Hadir & Isi Amplop', costMult: 1, sanity: 10, health: 0, hunger: 25, message: 'Menjaga hubungan sosial dengan baik dan bisa makan prasmanan sepuasnya!' },
-                    { text: 'Kirim Ucapan via WA Saja', costMult: 0, sanity: -15, health: 0, hunger: 0, message: 'Agak tidak enak hati, tapi aman dari pengeluaran mendadak.' }
-                ]
-            },
-            {
-                type: 'empty',
-                title: 'Hari yang Hemat & Damai',
-                desc: 'Tidak ada undangan keluar, tidak ada diskon menggiurkan. Hari yang tenang di kosan.',
-                icon: 'fa-face-smile-beam text-emerald-400',
-                tag: 'NORMAL',
-                baseCost: 0,
-                choices: [
-                    { text: 'Rebahan & Istirahat Cukup', costMult: 0, sanity: 10, health: 10, hunger: -5, message: 'Rebahan mengembalikan energi fisik dan mentalmu secara gratis.' }
-                ]
-            }
+            { type: 'fomo', title: 'Flash Sale Sepatu Impian!', desc: 'Diskon besar-besaran 70% malam ini! Temanmu udah pamer checkout barangnya.', icon: 'fa-bag-shopping text-amber-400', tag: 'GODAAN FOMO', baseCost: 450000, choices: [ { text: 'Checkout Sekarang (Senang!)', costMult: 1, sanity: 20, health: 0, hunger: 0, message: 'Sepatu baru mendarat! Mental naik, dompet menangis.' }, { text: 'Tahan Diri & Tutup Aplikasi', costMult: 0, sanity: -15, health: 0, hunger: 0, message: 'Kepikiran terus sampai susah tidur, tapi setidaknya hemat.' } ] },
+            { type: 'fomo', title: 'War Tiket Konser Viral', desc: 'Musisi internasional favoritmu manggung di Jakarta! Harus war tiket siang ini.', icon: 'fa-ticket-simple text-purple-400', tag: 'GODAAN FOMO', baseCost: 1200000, choices: [ { text: 'Gas War Tiket CAT 3', costMult: 1, sanity: 35, health: -5, hunger: 0, message: 'DAPAT TIKET! Auto pamer di story. Kepuasan maksimal.' }, { text: 'Nonton via Story Orang', costMult: 0, sanity: -20, health: 0, hunger: 0, message: 'Ngenes dan FOMO maksimal, tapi tabungan utuh.' } ] },
+            { type: 'fomo', title: 'Nongkrong Cafe Aesthetic', desc: 'Circle teman kantor ngajak hangout dadakan di cafe mahal.', icon: 'fa-mug-hot text-amber-400', tag: 'SOSIAL', baseCost: 150000, choices: [ { text: 'Ikut Nongkrong', costMult: 1, sanity: 15, health: 0, hunger: 15, message: 'Kenyang dan hepi ngobrol ngalor-ngidul sama teman.' }, { text: 'Alasan Sibuk Lembur', costMult: 0, sanity: -10, health: 0, hunger: 0, message: 'Merasa kesepian malam ini di kamar sendirian.' } ] },
+            { type: 'need', title: 'Musibah: Ban Motor Bocor', desc: 'Sial! Ban motormu kena paku di tengah jalan saat malam hari.', icon: 'fa-screwdriver-wrench text-slate-400', tag: 'REALITA', baseCost: 65000, choices: [ { text: 'Tambal & Servis Bengkel', costMult: 1, sanity: 0, health: 0, hunger: 0, message: 'Uang melayang cepat, tapi masalah langsung beres.' }, { text: 'Tuntun Motor Jauh', costMult: 0, sanity: -25, health: -20, hunger: -25, message: 'Fisik terkuras habis, keringat dingin, tapi irit.' } ] },
+            { type: 'need', title: 'Badan Menggigil Demam', desc: 'Karena kurang gizi & begadang, fisikmu tumbang mendadak.', icon: 'fa-truck-medical text-rose-400', tag: 'KESEHATAN', baseCost: 180000, choices: [ { text: 'Berobat ke Klinik Terdekat', costMult: 1, sanity: 10, health: 40, hunger: 0, message: 'Dapat obat, badan langsung terasa membaik.' }, { text: 'Tahan Sakit & Tidur Aja', costMult: 0, sanity: -30, health: -20, hunger: -15, message: 'Menggigil kesakitan semalaman tanpa pengobatan.' } ] },
+            { type: 'need', title: 'Kondangan Nikahan Teman', desc: 'Teman satu circle menikah! Harus bawa amplop.', icon: 'fa-envelope-open-text text-yellow-400', tag: 'KEWAJIBAN', baseCost: 250000, choices: [ { text: 'Hadir & Beri Amplop', costMult: 1, sanity: 15, health: 0, hunger: 30, message: 'Makan prasmanan puas, hubungan sosial terjaga!' }, { text: 'Skip & Kirim WA Saja', costMult: 0, sanity: -15, health: 0, hunger: 0, message: 'Ada rasa bersalah dan sedikit dikucilkan.' } ] },
+            { type: 'empty', title: 'Hari yang Hemat & Damai', desc: 'Wow! Tidak ada pengeluaran mendadak atau godaan jajan hari ini.', icon: 'fa-face-smile-beam text-emerald-400', tag: 'NORMAL', baseCost: 0, choices: [ { text: 'Rebahan Sepuasnya', costMult: 0, sanity: 15, health: 15, hunger: -5, message: 'Memulihkan energi secara gratis dengan tidur siang.' } ] }
         ];
 
         const STORE_CATALOG = {
             food: [
                 { id: 'f1', name: 'Nasi Warteg Lengkap', icon: 'fa-utensils text-amber-400', basePrice: 20000, hunger: 25, sanity: 0, health: 5 },
-                { id: 'f2', name: 'Catering Sehat & Nutrisi', icon: 'fa-bowl-rice text-emerald-400', basePrice: 45000, hunger: 45, sanity: 5, health: 15 },
-                { id: 'f3', name: 'Order Gofood / Fastfood', icon: 'fa-burger text-rose-400', basePrice: 75000, hunger: 50, sanity: 15, health: -5 }
+                { id: 'f2', name: 'Catering Sehat Bergizi', icon: 'fa-bowl-rice text-emerald-400', basePrice: 45000, hunger: 45, sanity: 5, health: 15 },
+                { id: 'f3', name: 'Gofood / Junkfood', icon: 'fa-burger text-rose-400', basePrice: 75000, hunger: 50, sanity: 15, health: -10 }
             ],
             health: [
-                { id: 'h1', name: 'Vitamin C & Strip Obat', icon: 'fa-pills text-sky-400', basePrice: 35000, hunger: 0, sanity: 0, health: 25 },
-                { id: 'h2', name: 'Pijat Reflexi / Urut Body', icon: 'fa-hand-sparkles text-purple-400', basePrice: 120000, hunger: 0, sanity: 20, health: 35 },
-                { id: 'h3', name: 'Medical Checkup Ringan', icon: 'fa-heart-pulse text-rose-400', basePrice: 250000, hunger: 0, sanity: 10, health: 60 },
-                { id: 'h4', name: 'Sewa Sepeda Keliling', icon: 'fa-bicycle text-emerald-400', basePrice: 35000, hunger: -15, sanity: 25, health: 30 }
+                { id: 'h1', name: 'Vitamin & Paracetamol', icon: 'fa-pills text-sky-400', basePrice: 35000, hunger: 0, sanity: 0, health: 25 },
+                { id: 'h2', name: 'Pijat Reflexi Pegal', icon: 'fa-hand-sparkles text-purple-400', basePrice: 120000, hunger: 0, sanity: 20, health: 35 },
+                { id: 'h3', name: 'Checkup & Rawat Inap', icon: 'fa-heart-pulse text-rose-400', basePrice: 250000, hunger: 0, sanity: 10, health: 60 }
             ],
             lifestyle: [
-                { id: 'l1', name: 'Langganan Streaming / Game', icon: 'fa-tv text-indigo-400', basePrice: 50000, hunger: 0, sanity: 25, health: 0 },
-                { id: 'l2', name: 'Beli Varian Coffee / Boba', icon: 'fa-glass-water text-yellow-400', basePrice: 35000, hunger: 5, sanity: 15, health: 0 },
+                { id: 'l1', name: 'Langganan Netflix/Game', icon: 'fa-tv text-indigo-400', basePrice: 50000, hunger: 0, sanity: 25, health: 0 },
+                { id: 'l2', name: 'Beli Boba / Es Kopi', icon: 'fa-glass-water text-yellow-400', basePrice: 35000, hunger: 5, sanity: 15, health: 0 },
                 { id: 'l3', name: 'Outfit Mall (Baru)', icon: 'fa-shirt text-rose-400', basePrice: 350000, hunger: 0, sanity: 35, health: 0 },
                 { id: 'l4', name: 'Outfit Thrift (Bekas)', icon: 'fa-shirt text-amber-400', basePrice: 100000, hunger: 0, sanity: 25, health: 0 },
                 { id: 'l5', name: 'Sepeda Lipat (Baru)', icon: 'fa-person-biking text-emerald-400', basePrice: 1500000, hunger: -20, sanity: 50, health: 40 },
                 { id: 'l6', name: 'Sepeda Lipat (Bekas)', icon: 'fa-person-biking text-slate-400', basePrice: 600000, hunger: -20, sanity: 40, health: 40 },
-                { id: 'l7', name: 'Staycation / Healing Weekend', icon: 'fa-hotel text-sky-400', basePrice: 400000, hunger: 10, sanity: 60, health: 10 }
+                { id: 'l7', name: 'Staycation Healing', icon: 'fa-hotel text-sky-400', basePrice: 400000, hunger: 10, sanity: 60, health: 20 }
             ]
         };
 
-        function updateUI() {
-            const activePreset = DIFFICULTY_PRESETS[selectedDifficultyKey];
+        function triggerShakeWarning(elementId, value) {
+            const el = document.getElementById(elementId);
+            if (value <= 25 && el) {
+                el.parentElement.classList.add('status-danger');
+                setTimeout(() => el.parentElement.classList.remove('status-danger'), 500);
+            }
+        }
 
+        function updateUI() {
+            const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
+
+            // Animate Day counter update
             elDay.innerHTML = `${state.day}<span class="text-[10px] md:text-xs font-normal text-slate-400">/30</span>`;
             elEventDayNum.innerText = state.day;
             
+            const dayCont = document.getElementById('day-container');
+            dayCont.classList.add('scale-110', 'border-indigo-500');
+            setTimeout(() => dayCont.classList.remove('scale-110', 'border-indigo-500'), 300);
+            
+            // Format Saldo
             const isNegative = state.balance < 0;
             const displayBal = (isNegative ? "-" : "") + "Rp " + formatMoney(Math.abs(state.balance));
-            
             elBalance.innerText = displayBal;
             
-            if (state.balance < 200000) {
-                elBalance.className = "text-xs md:text-xl font-black text-rose-400 leading-none";
-            } else {
-                elBalance.className = "text-xs md:text-xl font-black text-emerald-400 leading-none";
-            }
+            elBalance.className = state.balance < (preset.initialBalance * 0.1) 
+                ? "text-xs md:text-xl font-black text-rose-400 leading-none drop-shadow-md" 
+                : "text-xs md:text-xl font-black text-emerald-400 leading-none drop-shadow-md";
 
+            // Update Bars
             const hVal = Math.max(0, Math.min(100, state.hunger));
             const sVal = Math.max(0, Math.min(100, state.sanity));
             const heVal = Math.max(0, Math.min(100, state.health));
 
-            elHungerBar.style.width = `${hVal}%`;
-            elHungerText.innerText = `${hVal}%`;
+            elHungerBar.style.width = `${hVal}%`; elHungerText.innerText = `${hVal}%`;
             document.getElementById('mob-hunger-bar').style.width = `${hVal}%`;
-            document.getElementById('mob-hunger-val').innerText = `${hVal}%`;
+            triggerShakeWarning('hunger-bar', hVal);
 
-            elSanityBar.style.width = `${sVal}%`;
-            elSanityText.innerText = `${sVal}%`;
+            elSanityBar.style.width = `${sVal}%`; elSanityText.innerText = `${sVal}%`;
             document.getElementById('mob-sanity-bar').style.width = `${sVal}%`;
-            document.getElementById('mob-sanity-val').innerText = `${sVal}%`;
+            triggerShakeWarning('sanity-bar', sVal);
 
-            elHealthBar.style.width = `${heVal}%`;
-            elHealthText.innerText = `${heVal}%`;
+            elHealthBar.style.width = `${heVal}%`; elHealthText.innerText = `${heVal}%`;
             document.getElementById('mob-health-bar').style.width = `${heVal}%`;
-            document.getElementById('mob-health-val').innerText = `${heVal}%`;
+            triggerShakeWarning('health-bar', heVal);
 
-            document.getElementById('hunger-decay-text').innerText = `-${activePreset.decay.hunger}% / hari`;
-            document.getElementById('sanity-decay-text').innerText = `-${activePreset.decay.sanity}% / hari`;
-            document.getElementById('health-decay-text').innerText = `-${activePreset.decay.health}% / hari`;
+            document.getElementById('hunger-decay-text').innerText = `-${preset.decay.hunger}%`;
+            document.getElementById('sanity-decay-text').innerText = `-${preset.decay.sanity}%`;
+            document.getElementById('health-decay-text').innerText = `-${preset.decay.health}%`;
 
             renderStoreItems();
             checkGameOver();
@@ -819,190 +678,163 @@
 
         window.switchMobileTab = function(tabName) {
             activeMobileTab = tabName;
+            const tabs = ['event', 'store', 'status'];
             
-            const btnEvent = document.getElementById('mob-tab-event');
-            const btnStore = document.getElementById('mob-tab-store');
-            const btnStatus = document.getElementById('mob-tab-status');
-
-            const pStatus = document.getElementById('panel-status');
-            const pEvent = document.getElementById('panel-event');
-            const pStore = document.getElementById('panel-store');
-
-            [btnEvent, btnStore, btnStatus].forEach(btn => {
-                btn.className = 'flex-1 py-2.5 rounded-xl text-slate-400 transition flex items-center justify-center gap-1.5 btn-active';
+            tabs.forEach(t => {
+                const btn = document.getElementById(`mob-tab-${t}`);
+                const panel = document.getElementById(`panel-${t}`);
+                
+                if (t === tabName) {
+                    btn.className = 'flex-1 py-2.5 rounded-xl text-white transition-all flex items-center justify-center gap-1.5 btn-active tab-btn-active';
+                    panel.classList.remove('hidden');
+                    panel.style.animation = 'slideInUp 0.3s ease-out';
+                } else {
+                    btn.className = 'flex-1 py-2.5 rounded-xl text-slate-400 transition-all flex items-center justify-center gap-1.5 btn-active';
+                    panel.classList.add('hidden');
+                }
             });
-
-            pStatus.classList.add('hidden');
-            pEvent.classList.add('hidden');
-            pStore.classList.add('hidden');
-
-            if (tabName === 'event') {
-                btnEvent.className = 'flex-1 py-2.5 rounded-xl text-white transition flex items-center justify-center gap-1.5 btn-active tab-btn-active';
-                pEvent.classList.remove('hidden');
-            } else if (tabName === 'store') {
-                btnStore.className = 'flex-1 py-2.5 rounded-xl text-white transition flex items-center justify-center gap-1.5 btn-active tab-btn-active';
-                pStore.classList.remove('hidden');
-            } else if (tabName === 'status') {
-                btnStatus.className = 'flex-1 py-2.5 rounded-xl text-white transition flex items-center justify-center gap-1.5 btn-active tab-btn-active';
-                pStatus.classList.remove('hidden');
-            }
         };
 
         window.switchStoreTab = function(catKey) {
             currentStoreTab = catKey;
             ['food', 'health', 'lifestyle'].forEach(k => {
                 const btn = document.getElementById(`store-tab-${k}`);
-                if (btn) {
-                    if (k === catKey) {
-                        btn.className = 'px-3.5 py-1.5 rounded-xl text-white transition btn-active tab-btn-active';
-                    } else {
-                        btn.className = 'px-3.5 py-1.5 rounded-xl text-slate-400 transition btn-active';
-                    }
-                }
+                if(btn) btn.className = k === catKey 
+                    ? 'px-3.5 py-1.5 rounded-xl text-white transition-all btn-active tab-btn-active' 
+                    : 'px-3.5 py-1.5 rounded-xl text-slate-400 transition-all btn-active';
             });
+            
+            const container = document.getElementById('store-items-container');
+            container.style.animation = 'none';
+            void container.offsetWidth;
+            container.style.animation = 'slideInUp 0.3s ease-out';
             renderStoreItems();
         };
 
         function renderStoreItems() {
             const container = document.getElementById('store-items-container');
             if (!container) return;
-
             const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
             const items = STORE_CATALOG[currentStoreTab] || [];
 
-            let html = '';
-            items.forEach(item => {
+            container.innerHTML = items.map((item, idx) => {
                 const price = Math.round(item.basePrice * preset.priceMult);
-                
                 let statsEffect = [];
-                // Handle penambahan & pengurangan stats untuk UI
-                if (item.hunger > 0) statsEffect.push(`<span class="text-amber-400">+${item.hunger}% Kenyang</span>`);
-                else if (item.hunger < 0) statsEffect.push(`<span class="text-rose-500">${item.hunger}% Kenyang</span>`);
-                
-                if (item.sanity > 0) statsEffect.push(`<span class="text-purple-400">+${item.sanity}% Waras</span>`);
-                else if (item.sanity < 0) statsEffect.push(`<span class="text-rose-500">${item.sanity}% Waras</span>`);
-                
-                if (item.health > 0) statsEffect.push(`<span class="text-rose-400">+${item.health}% Sehat</span>`);
-                else if (item.health < 0) statsEffect.push(`<span class="text-rose-500">${item.health}% Sehat</span>`);
+                if (item.hunger) statsEffect.push(`<span class="${item.hunger>0?'text-amber-400':'text-rose-500'}">${item.hunger>0?'+':''}${item.hunger}% Kenyang</span>`);
+                if (item.sanity) statsEffect.push(`<span class="${item.sanity>0?'text-purple-400':'text-rose-500'}">${item.sanity>0?'+':''}${item.sanity}% Waras</span>`);
+                if (item.health) statsEffect.push(`<span class="${item.health>0?'text-rose-400':'text-rose-500'}">${item.health>0?'+':''}${item.health}% Sehat</span>`);
 
-                html += `
-                    <button onclick="buyStoreItem('${item.id}')" class="text-left p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800/80 transition flex flex-col justify-between group shadow-sm btn-active">
-                        <div class="flex items-start justify-between gap-2 mb-2 w-full">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-sm shrink-0">
-                                    <i class="${item.icon}"></i>
-                                </div>
-                                <div>
-                                    <div class="font-extrabold text-white text-xs md:text-sm leading-tight">${item.name}</div>
-                                    <div class="text-[10px] text-slate-400 font-medium mt-0.5">${statsEffect.join(' • ')}</div>
-                                </div>
+                return `
+                    <button onclick="buyStoreItem('${item.id}')" style="animation: slideInUp 0.4s ease-out ${idx * 0.1}s both;" class="text-left p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/80 hover:bg-slate-800 transition-all flex flex-col justify-between group shadow-sm btn-active hover:shadow-[0_0_15px_rgba(99,102,241,0.2)] transform hover:-translate-y-1">
+                        <div class="flex items-start gap-3 mb-2 w-full">
+                            <div class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-inner">
+                                <i class="${item.icon}"></i>
+                            </div>
+                            <div>
+                                <div class="font-extrabold text-white text-xs md:text-sm leading-tight">${item.name}</div>
+                                <div class="text-[10px] text-slate-400 font-medium mt-1 leading-tight">${statsEffect.join(' • ')}</div>
                             </div>
                         </div>
                         <div class="w-full flex justify-end items-center border-t border-slate-800/80 pt-2 mt-1">
-                            <span class="text-xs font-black text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-xl group-hover:bg-rose-500 group-hover:text-white transition">
+                            <span class="text-xs font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1 rounded-xl group-hover:bg-rose-500 group-hover:text-white transition-colors shadow-sm">
                                 -Rp ${formatMoney(price)}
                             </span>
                         </div>
                     </button>
                 `;
-            });
-
-            container.innerHTML = html;
+            }).join('');
         }
 
         window.buyStoreItem = function(itemId) {
             if (state.gameOverTriggered) return;
-
             const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
             let foundItem = null;
-
-            Object.keys(STORE_CATALOG).forEach(cat => {
-                const match = STORE_CATALOG[cat].find(i => i.id === itemId);
+            Object.values(STORE_CATALOG).forEach(cat => {
+                const match = cat.find(i => i.id === itemId);
                 if (match) foundItem = match;
             });
-
             if (!foundItem) return;
 
             const finalPrice = Math.round(foundItem.basePrice * preset.priceMult);
             modifyStats(finalPrice, foundItem.hunger, foundItem.sanity, foundItem.health);
+            
+            // Animasi visual interaktif di panel belanja
+            const panelStore = document.getElementById('panel-store').querySelector('.glass-panel');
+            panelStore.style.transform = 'scale(0.98)';
+            setTimeout(()=> panelStore.style.transform = 'scale(1)', 150);
         };
 
         function showFloatingMoney(amount, isExpense) {
             const container = document.getElementById('balance-anim-container');
             if (!container) return;
-
             const anim = document.createElement('div');
-            anim.className = `money-anim text-xs bg-slate-900 border px-2.5 py-1 rounded-xl ${isExpense ? 'text-rose-400 border-rose-500/30' : 'text-emerald-400 border-emerald-500/30'}`;
+            anim.className = `money-anim text-xs md:text-sm bg-slate-900 border px-3 py-1 rounded-xl ${isExpense ? 'text-rose-400 border-rose-500/40 shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.4)]'}`;
             anim.innerText = (isExpense ? '-' : '+') + 'Rp ' + formatMoney(amount);
-            
-            anim.style.right = '0px';
-            anim.style.top = '10px';
+            anim.style.right = (Math.random() * 20 - 10) + 'px'; // Random x offset
             
             container.appendChild(anim);
-            setTimeout(() => anim.remove(), 1200);
+            
+            const balCont = document.getElementById('balance-container');
+            balCont.classList.add('border-rose-500', 'bg-rose-900/30');
+            setTimeout(()=> {
+                balCont.classList.remove('border-rose-500', 'bg-rose-900/30');
+                anim.remove();
+            }, 1200);
         }
 
         function modifyStats(cost, hungerMod = 0, sanityMod = 0, healthMod = 0) {
             if (state.gameOverTriggered) return;
-
             if (cost > 0) {
                 state.balance -= cost;
                 showFloatingMoney(cost, true);
             }
-            
             state.hunger = Math.max(0, Math.min(100, state.hunger + hungerMod));
             state.sanity = Math.max(0, Math.min(100, state.sanity + sanityMod));
             state.health = Math.max(0, Math.min(100, state.health + healthMod));
-            
             updateUI();
         }
 
         function renderEvent() {
             state.hasPlayedEvent = false;
             btnNextDay.disabled = true;
-            btnNextDay.classList.add('opacity-50', 'cursor-not-allowed');
+            btnNextDay.classList.remove('animate-pulseGlow');
+            
+            // Re-trigger event animation
+            elEventContent.classList.remove('event-slide-in');
+            void elEventContent.offsetWidth;
+            elEventContent.classList.add('event-slide-in');
 
             const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
-
-            let evtTemplate;
             const rand = Math.random();
-            if (rand < 0.6) {
-                const fomoEvents = events.filter(e => e.type === 'fomo');
-                evtTemplate = fomoEvents[Math.floor(Math.random() * fomoEvents.length)];
-            } else if (rand < 0.85) {
-                const needEvents = events.filter(e => e.type === 'need');
-                evtTemplate = needEvents[Math.floor(Math.random() * needEvents.length)];
-            } else {
-                const emptyEvents = events.filter(e => e.type === 'empty');
-                evtTemplate = emptyEvents[0];
-            }
+            let evtTemplate;
+            if (rand < 0.6) evtTemplate = events.filter(e => e.type === 'fomo')[Math.floor(Math.random() * events.filter(e => e.type === 'fomo').length)];
+            else if (rand < 0.85) evtTemplate = events.filter(e => e.type === 'need')[Math.floor(Math.random() * events.filter(e => e.type === 'need').length)];
+            else evtTemplate = events.filter(e => e.type === 'empty')[0];
 
             elEventTag.innerText = evtTemplate.tag;
             
-            let buttonsHtml = '';
-            evtTemplate.choices.forEach((choice, index) => {
+            let buttonsHtml = evtTemplate.choices.map((choice, index) => {
                 const calculatedCost = Math.round(evtTemplate.baseCost * choice.costMult * preset.priceMult);
                 const isFree = calculatedCost === 0;
-
-                buttonsHtml += `
-                    <button onclick="handleEventChoice(${index})" class="w-full text-left p-4 rounded-2xl bg-slate-900/90 border-2 border-slate-800 hover:border-indigo-500 hover:bg-slate-800/90 transition-all mb-3 group shadow-md btn-active relative overflow-hidden">
-                        <div class="flex justify-between items-center gap-2">
-                            <span class="font-extrabold text-white text-xs md:text-sm leading-snug">${choice.text}</span>
+                return `
+                    <button onclick="handleEventChoice(${index})" class="w-full text-left p-4 rounded-2xl bg-slate-900/80 border-2 border-slate-700/80 hover:border-indigo-400 hover:bg-slate-800 transition-all mb-3 group shadow-md btn-active hover:shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                        <div class="flex justify-between items-center gap-3">
+                            <span class="font-extrabold text-white text-sm md:text-base leading-snug">${choice.text}</span>
                             ${!isFree ? 
-                                `<span class="text-xs font-black text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-xl shrink-0 group-hover:bg-rose-500 group-hover:text-white transition">-Rp ${formatMoney(calculatedCost)}</span>` : 
-                                '<span class="text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl shrink-0">Gratis</span>'}
+                                `<span class="text-xs font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-xl shrink-0 group-hover:bg-rose-500 group-hover:text-white transition-all">-Rp ${formatMoney(calculatedCost)}</span>` : 
+                                '<span class="text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-xl shrink-0">Gratis</span>'}
                         </div>
                     </button>
                 `;
-            });
+            }).join('');
 
             elEventContent.innerHTML = `
-                <div class="w-16 h-16 rounded-3xl bg-indigo-600/20 border border-indigo-400/30 text-indigo-400 text-3xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/10">
+                <div class="w-20 h-20 rounded-3xl bg-indigo-600/20 border border-indigo-400/40 text-indigo-400 text-4xl flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(99,102,241,0.2)] group-hover:scale-110 transition-transform duration-500">
                     <i class="fas ${evtTemplate.icon}"></i>
                 </div>
-                <h3 class="text-lg md:text-2xl font-black text-white mb-2 tracking-tight">${evtTemplate.title}</h3>
-                <p class="text-slate-300 text-xs md:text-sm mb-6 max-w-md mx-auto leading-relaxed font-medium">${evtTemplate.desc}</p>
-                <div class="w-full max-w-md mx-auto" id="event-choices-container" data-event-data='${JSON.stringify(evtTemplate).replace(/'/g, "&#39;")}'>
+                <h3 class="text-xl md:text-2xl font-black text-white mb-3 tracking-tight drop-shadow-md">${evtTemplate.title}</h3>
+                <p class="text-slate-300 text-sm mb-6 max-w-md mx-auto leading-relaxed font-medium">${evtTemplate.desc}</p>
+                <div class="w-full max-w-md mx-auto" id="event-choices-container" data-event-data='${JSON.stringify(evtTemplate).replace(/'/g, "&#39;")}' style="animation: slideInUp 0.4s ease-out 0.2s both;">
                     ${buttonsHtml}
                 </div>
             `;
@@ -1010,51 +842,58 @@
 
         window.handleEventChoice = function(choiceIndex) {
             if (state.gameOverTriggered) return;
-
             const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
             const container = document.getElementById('event-choices-container');
             const eventData = JSON.parse(container.getAttribute('data-event-data').replace(/&#39;/g, "'"));
             const choice = eventData.choices[choiceIndex];
 
             const calculatedCost = Math.round(eventData.baseCost * choice.costMult * preset.priceMult);
-
             modifyStats(calculatedCost, choice.hunger || 0, choice.sanity || 0, choice.health || 0);
             state.hasPlayedEvent = true;
 
             if (state.gameOverTriggered) return;
 
+            elEventContent.classList.remove('event-slide-in');
+            void elEventContent.offsetWidth;
+            elEventContent.classList.add('event-slide-in');
+
             elEventContent.innerHTML = `
-                <div class="w-16 h-16 rounded-3xl bg-emerald-600/20 border border-emerald-400/30 text-emerald-400 text-3xl flex items-center justify-center mb-3">
+                <div class="w-20 h-20 rounded-3xl bg-emerald-600/20 border border-emerald-400/40 text-emerald-400 text-4xl flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(16,185,129,0.2)] animate-bounce">
                     <i class="fas fa-circle-check"></i>
                 </div>
-                <h3 class="text-base md:text-xl font-black text-white mb-2">Keputusan Diambil</h3>
-                <div class="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 w-full max-w-md mx-auto mb-4">
-                    <p class="text-slate-200 text-xs md:text-sm font-semibold leading-relaxed">${choice.message}</p>
+                <h3 class="text-lg md:text-xl font-black text-white mb-3 drop-shadow-md">Keputusan Diambil</h3>
+                <div class="p-5 bg-slate-900/90 rounded-2xl border border-slate-700 w-full max-w-md mx-auto mb-5 shadow-inner">
+                    <p class="text-slate-200 text-sm font-semibold leading-relaxed">${choice.message}</p>
                 </div>
-                <p class="text-[11px] text-slate-400 font-medium"><i class="fas fa-store text-emerald-400 mr-1"></i> Beli kebutuhan di Toko jika perlu, lalu tekan 'Akhiri Hari'.</p>
+                <p class="text-[11px] text-slate-400 font-medium px-4 py-2 bg-slate-800 rounded-full border border-slate-700"><i class="fas fa-store text-emerald-400 mr-1 animate-pulse"></i> Beli kebutuhan di Toko jika perlu, lalu tekan 'Akhiri Hari'.</p>
             `;
-
             btnNextDay.disabled = false;
-            btnNextDay.classList.remove('opacity-50', 'cursor-not-allowed');
+            btnNextDay.classList.add('animate-pulseGlow');
+            
+            if (window.innerWidth < 1024) {
+                 setTimeout(() => btnNextDay.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+            }
         };
 
         window.nextDay = function() {
             if (!state.hasPlayedEvent || state.gameOverTriggered) return; 
-
             const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
+
+            btnNextDay.classList.remove('animate-pulseGlow');
 
             state.hunger -= preset.decay.hunger; 
             state.sanity -= preset.decay.sanity;  
             state.health -= preset.decay.health;
             
-            // Special Sandwich event
+            // Event Sandwich: Potong uang otomatis di hari ke-15
             if (selectedDifficultyKey === 'hard' && state.day === 15) {
-                state.balance -= 600000;
-                showFloatingMoney(600000, true);
+                state.balance -= 1000000;
+                showFloatingMoney(1000000, true);
+                // Biar user sadar ada potongan
+                alert("INFO: Hari ke-15! Kamu mengirim uang bulanan ke Orang Tua sebesar Rp 1.000.000.");
             }
 
             state.day++;
-
             updateUI();
             if (state.gameOverTriggered) return;
 
@@ -1062,35 +901,22 @@
                 showVictory();
                 return;
             }
-
-            if (window.innerWidth < 1024) {
-                switchMobileTab('event');
-            }
-
+            if (window.innerWidth < 1024) switchMobileTab('event');
             renderEvent();
         };
 
         function checkGameOver() {
             if (state.gameOverTriggered) return true;
-            
-            let reason = '';
-            let icon = '';
+            let reason = '', icon = '';
 
             if (state.balance < 0) {
-                 reason = 'Kamu TERJERAT PINJOL & DEBT COLLECTOR! Memaksakan gaya hidup FOMO membuat uangmu minus parah.';
-                 icon = '💸';
-            }
-            else if (state.hunger <= 0) {
-                reason = 'Kamu pingsan dan kelaparan ekstrem. Terlalu pelit beli makan demi gengsi.';
-                icon = '💀';
-            } 
-            else if (state.sanity <= 0) {
-                reason = 'Kamu kena BURNOUT & DEPRESI BERAT. Kesehatan mental terabaikan karena kurang rekreasi.';
-                icon = '🤯';
-            } 
-            else if (state.health <= 0) {
-                reason = 'Kamu masuk RUMAH SAKIT! Kesehatan fisik drop total karena abai vitamin & pengobatan.';
-                icon = '🏥';
+                 reason = 'TERJERAT PINJOL! Memaksakan gaya hidup di luar batas gaji membuatmu dikejar Debt Collector.'; icon = '💸';
+            } else if (state.hunger <= 0) {
+                reason = 'PINGSAN KELAPARAN! Terlalu pelit beli makanan bergizi demi menghemat uang.'; icon = '💀';
+            } else if (state.sanity <= 0) {
+                reason = 'BURNOUT PARAH! Kesehatan mentalmu hancur karena kurang hiburan dan relaksasi.'; icon = '🤯';
+            } else if (state.health <= 0) {
+                reason = 'MASUK RUMAH SAKIT! Kondisi fisikmu drop total akibat mengabaikan kesehatan.'; icon = '🏥';
             }
 
             if (reason) {
@@ -1099,11 +925,7 @@
                 document.getElementById('go-message').innerText = reason;
                 document.getElementById('go-day').innerText = `${state.day} Hari`;
                 document.getElementById('go-balance').innerText = `Rp ${formatMoney(state.balance)}`;
-                
-                setTimeout(() => {
-                    modalGameOver.classList.add('active');
-                }, 300);
-                
+                setTimeout(() => modalGameOver.classList.add('active'), 500);
                 return true;
             }
             return false;
@@ -1112,68 +934,42 @@
         function showVictory() {
             state.gameOverTriggered = true;
             document.getElementById('vic-balance').innerText = `Rp ${formatMoney(state.balance)}`;
-            
             let evalText = "";
-            if (state.balance > 3000000) {
-                evalText = "Level Literasi Finansial Mumpuni! Kamu sangat bijak menahan godaan FOMO dan menyisihkan tabungan tebal.";
-            } else if (state.balance > 1000000) {
-                evalText = "Sangat Baik! Kamu berhasil menjaga keseimbangan antara gaya hidup, kebutuhan dasar, dan tabungan.";
-            } else if (state.balance > 0) {
-                evalText = "Lolos Tipis! Gajimu hampir habis tak tersisa bulan ini, namun setidaknya tidak terjerat utang.";
-            } else {
-                evalText = "Bertahan di Titik Kritis! Kamu survive di hari terakhir.";
-            }
+            const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
+            const ratio = state.balance / preset.initialBalance;
+            
+            if (ratio > 0.4) evalText = "Luar Biasa! Literasi finansial tingkat Dewa. Mampu berhemat sekaligus hidup sejahtera.";
+            else if (ratio > 0.1) evalText = "Sangat Baik! Kamu ahli mengelola gaji tanpa menyiksa diri.";
+            else if (state.balance > 0) evalText = "Lolos Tipis! Gajimu benar-benar hanya numpang lewat bulan ini, namun setidaknya tidak berutang.";
+            else evalText = "Survive! Kamu berhasil meloloskan diri dari kerasnya hidup.";
             
             document.getElementById('vic-evaluation').innerText = evalText;
-            
-            setTimeout(() => {
-                modalVictory.classList.add('active');
-            }, 300);
+            setTimeout(() => modalVictory.classList.add('active'), 500);
         }
 
-        window.openGuideModal = function() {
-            modalGuide.classList.add('active');
-        };
+        window.openGuideModal = () => modalGuide.classList.add('active');
+        window.closeGuideModal = () => modalGuide.classList.remove('active');
+        window.openPauseModal = () => { if (!state.gameOverTriggered) modalPause.classList.add('active'); };
+        window.closePauseModal = () => modalPause.classList.remove('active');
 
-        window.closeGuideModal = function() {
-            modalGuide.classList.remove('active');
-        };
-
-        // Pause Menu Logic
-        window.openPauseModal = function() {
-            if (state.gameOverTriggered) return;
-            modalPause.classList.add('active');
-        };
-
-        window.closePauseModal = function() {
-            modalPause.classList.remove('active');
-        };
-
-        window.openCreditsModal = function() {
-            modalCredits.classList.add('active');
-        };
-
-        window.closeCreditsModal = function() {
-            modalCredits.classList.remove('active');
-        };
-
-        window.restartCurrentMode = function() {
+        window.restartCurrentMode = () => {
             closePauseModal();
             startGame(); 
         };
 
         window.selectDifficulty = function(modeKey) {
             selectedDifficultyKey = modeKey;
-            
             ['easy', 'normal', 'hard', 'extreme'].forEach(k => {
                 const card = document.getElementById(`mode-card-${k}`);
                 if (card) {
                     if (k === modeKey) {
                         card.style.borderColor = '#6366f1';
                         card.style.backgroundColor = 'rgba(99, 102, 241, 0.15)';
+                        card.style.transform = 'scale(1.02)';
                     } else {
                         card.style.borderColor = 'rgba(51, 65, 85, 0.8)';
                         card.style.backgroundColor = '#0f172a';
+                        card.style.transform = 'scale(1)';
                     }
                 }
             });
@@ -1181,21 +977,14 @@
 
         window.startGame = function() {
             const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
-            
             state = {
-                day: 1,
-                maxDays: 30,
-                balance: preset.initialBalance,
-                hunger: 100,
-                sanity: 100,
-                health: 100,
-                hasPlayedEvent: false,
-                gameOverTriggered: false
+                day: 1, maxDays: 30, balance: preset.initialBalance,
+                hunger: 100, sanity: 100, health: 100,
+                hasPlayedEvent: false, gameOverTriggered: false
             };
-
             const badge = document.getElementById('difficulty-badge');
             badge.innerText = preset.name;
-            badge.className = `text-[9px] md:text-[11px] px-2 py-0.5 rounded-full font-bold border ${preset.badgeClass}`;
+            badge.className = `text-[9px] md:text-[11px] px-3 py-0.5 rounded-full font-bold border shadow-sm ${preset.badgeClass}`;
 
             modalStart.classList.remove('active');
             updateUI();
@@ -1205,16 +994,46 @@
         window.resetGame = function() {
             modalGameOver.classList.remove('active');
             modalVictory.classList.remove('active');
-            modalPause.classList.remove('active'); // Pastikan pause modal tertutup
+            modalPause.classList.remove('active'); 
             modalStart.classList.add('active');
-            
-            // Secara default reset ke normal saat kembali ke menu, atau biarkan mode sebelumnya aktif
-            // selectDifficulty('normal'); 
         };
 
-        window.onload = function() {
-            selectDifficulty('normal');
-        };
+        // Window override prompt alert to soft modal if requested, but request rules say no alert.
+        // Ganti alert bawaan ke custom JS alert, tapi untuk rule "never use alert"
+        // Let's remove the alert inside sandwich mode and replace it with direct message
+        const originalNextDay = window.nextDay;
+        window.nextDay = function() {
+            if (!state.hasPlayedEvent || state.gameOverTriggered) return; 
+            const preset = DIFFICULTY_PRESETS[selectedDifficultyKey];
+
+            btnNextDay.classList.remove('animate-pulseGlow');
+
+            state.hunger -= preset.decay.hunger; 
+            state.sanity -= preset.decay.sanity;  
+            state.health -= preset.decay.health;
+            
+            // Event Sandwich: Potong uang otomatis di hari ke-15 (TANPA ALERT BAWAAN)
+            if (selectedDifficultyKey === 'hard' && state.day === 15) {
+                state.balance -= 1000000;
+                showFloatingMoney(1000000, true);
+                
+                // Buat custom notification kecil daripada alert()
+                const notif = document.createElement('div');
+                notif.className = "fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-white font-bold px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce";
+                notif.innerHTML = '<i class="fas fa-exclamation-triangle text-xl"></i> Kewajiban: Mengirim Rp 1.000.000 ke Orang Tua!';
+                document.body.appendChild(notif);
+                setTimeout(() => notif.remove(), 4000);
+            }
+
+            state.day++;
+            updateUI();
+            if (state.gameOverTriggered) return;
+            if (state.day > state.maxDays) { showVictory(); return; }
+            if (window.innerWidth < 1024) switchMobileTab('event');
+            renderEvent();
+        }
+
+        window.onload = () => selectDifficulty('normal');
     </script>
 </body>
 </html>
